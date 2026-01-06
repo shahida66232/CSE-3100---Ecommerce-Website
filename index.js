@@ -1,56 +1,36 @@
-// index.js
-const express = require('express');
-const mongoose = require('mongoose');
-const userRoutes = require('./routes/user.router');
-require('dotenv').config(); // Load environment variables
+import express from "express"
+import mongoose from "mongoose"
+import dotenv from "dotenv"
+import userRoutes from "./routes/userRoutes.js"
+import productRoutes from "./routes/productRoutes.js"
+import orderRoutes from "./routes/orderRoutes.js"
+import cartRoutes from"./routes/cartRoutes.js"
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+dotenv.config()
+const app=express()
 
-// Middleware to parse JSON
-app.use(express.json());
+app.use(express.json())
+app.use(express.urlencoded({extended: false}))
+app.use(cookieParser())
 
-// Test route to check backend status
-app.get('/', (req, res) => {
-    res.status(200).json({ success: true, message: 'Backend is working!' });
-});
-
-// Routes
-app.use('/api/users', userRoutes);
-
-// 404 handler
-app.use((req, res, next) => {
-    res.status(404).json({ success: false, message: 'Route not found' });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
-});
+app.use("/api/users", userRoutes)
+app.use("/api/products", productRoutes)
+app.use("/api/orders", orderRoutes)
+app.use("/api/carts",cartRoutes)
 
 
-// MongoDB connection
-const mongoURI = process.env.MONGO_URI;
+app.get("/",(req,res)=>{
+    res.send("Backend is working")
+})
 
-if (!mongoURI) {
-    console.error('MONGO_URI not defined in .env file');
-    process.exit(1);
-}
+mongoose.connect(process.env.MONGO_URI).then(()=>{
+    console.log("Mongoose is connected")
+}).catch(errro=>{
+    console.log(errro)
+})
 
-mongoose.connect(mongoURI)
-    .then(() => {
-        console.log('MongoDB Connected');
-        app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
-    })
-    .catch(err => {
-        console.error('MongoDB Connection Error:', err.message);
-        process.exit(1);
-    });
+const  PORT=process.env.PORT || 3000
 
-    const cartRouter = require('./routes/cart.router');
-const orderRouter = require('./routes/order.router');
-
-app.use('/api/cart', cartRouter);
-app.use('/api/orders', orderRouter);
-app.use('/api/users', userRoutes);
+app.listen(PORT,()=>{
+    console.log(`Runnning in http://localhost:${PORT}`)
+})
